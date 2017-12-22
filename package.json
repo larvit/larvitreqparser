@@ -1,0 +1,28 @@
+{
+  "name": "larvit-middleware-forms",
+  "version": "0.1.0",
+  "description": "Middleware to larvitbase or Express to handle forms",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/tape/bin/tape ./test/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larvit/larvit-middleware-forms.git"
+  },
+  "keywords": [
+    "middleware",
+    "forms",
+    "form"
+  ],
+	"author": {
+    "name": "Mikael 'Lilleman' Göransson",
+    "email": "lilleman@larvit.se",
+    "url": "http://github.com/larvit/larvitbase"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/larvit/larvit-middleware-forms/issues"
+  },
+  "homepage": "https://github.com/larvit/larvit-middleware-forms#readme"
+}
