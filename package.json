@@ -15,7 +15,7 @@
     "forms",
     "form"
   ],
-	"author": {
+  "author": {
     "name": "Mikael 'Lilleman' Göransson",
     "email": "lilleman@larvit.se",
     "url": "http://github.com/larvit/larvitbase"
@@ -24,5 +24,17 @@
   "bugs": {
     "url": "https://github.com/larvit/larvit-middleware-forms/issues"
   },
-  "homepage": "https://github.com/larvit/larvit-middleware-forms#readme"
+  "homepage": "https://github.com/larvit/larvit-middleware-forms#readme",
+  "devDependencies": {
+    "coveralls": "^3.0.0",
+    "eslint": "^4.13.1",
+    "istanbul": "^0.4.5",
+    "tape": "^4.8.0",
+    "tape-eslint": "^1.2.1"
+  },
+  "dependencies": {
+    "formidable": "^1.1.1",
+    "qs": "^6.5.1",
+    "winston": "^2.4.0"
+  }
 }
