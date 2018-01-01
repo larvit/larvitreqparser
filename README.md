@@ -19,6 +19,8 @@ npm i --save larvitreqparser
 
 ### Larvitbase
 
+Usage with [larvitbase](https://github.com/larvit/larvitbase)
+
 ```javascript
 const App       = require('larvitbase'),
       ReqParser = require('larvitreqparser'),
@@ -29,7 +31,7 @@ const App       = require('larvitbase'),
 new App({
 	'httpOptions': 8001,
 	'middleware': [
-		reqParser,
+		reqParser.parse,
 		function (req, res) {
 			// Now the following properties is populated depending on the request type:
 
@@ -48,6 +50,38 @@ new App({
 			// req.formFiles.path
 
 			res.end('Hello world');
+		}
+	]
+});
+```
+
+#### Cleanup when not using memory
+
+When not using memory, files are stored on disk. They must be manually removed or they will just fill up infinitly!
+
+```javascript
+const App        = require('larvitbase'),
+      ReqParser  = require('larvitreqparser'),
+      reqParser  = new ReqParser({
+      	'storage': '/tmp'
+      }),
+      fs         = require('fs');
+
+new App({
+	'httpOptions': 8001,
+	'middleware': [
+		reqParser.parse,
+		function (req, res, cb) {
+			res.end('Hello world');
+			cb();
+		},
+		function (req, res, cb) {
+
+			// Check if we have a form file, and if we do, remove it
+			if (req.formFiles && req.formFiles.path) {
+				return fs.unlink(req.formFiles.path, cb);
+			}
+			cb();
 		}
 	]
 });
