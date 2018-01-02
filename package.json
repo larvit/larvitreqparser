@@ -1,5 +1,5 @@
 {
-  "name": "larvit-middleware-forms",
+  "name": "larvitreqparser",
   "version": "0.1.0",
   "description": "Middleware to larvitbase or Express to handle forms",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/larvit/larvit-middleware-forms.git"
+    "url": "git+https://github.com/larvit/larvitreqparser.git"
   },
   "keywords": [
     "middleware",
@@ -22,9 +22,9 @@
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/larvit/larvit-middleware-forms/issues"
+    "url": "https://github.com/larvit/larvitreqparser/issues"
   },
-  "homepage": "https://github.com/larvit/larvit-middleware-forms#readme",
+  "homepage": "https://github.com/larvit/larvitreqparser#readme",
   "devDependencies": {
     "coveralls": "^3.0.0",
     "eslint": "^4.13.1",
