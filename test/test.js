@@ -12,7 +12,7 @@ const	ReqParser	= require(__dirname + '/../index.js'),
 // Set up winston
 log.remove(log.transports.Console);
 /**/log.add(log.transports.Console, {
-	'level':	'verbose',
+	'level':	'debug',
 	'colorize':	true,
 	'timestamp':	true,
 	'json':	false
@@ -114,10 +114,10 @@ test('POST request, raw body, fs storage', function (t) {
 	startServer(reqParser, function (req, res) {
 		res.end();
 		server.close(function (err) { if (err) throw err; });
-console.log('req.rawBodyPath: ' + req.rawBodyPath);
+
 		t.equal(fs.readFileSync(req.rawBodyPath).toString('hex'),	Buffer.from('foobar').toString('hex'));
 
-		fs.remove(tmpDir);
+		fs.remove(storagePath);
 
 		t.end();
 	}, function (err, result) {

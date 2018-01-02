@@ -6,8 +6,11 @@
 Middleware for [larvitbase](https://github.com/larvit/larvitbase) or [express](https://expressjs.com/) to handle parsing url, forms and file uploads. This is just a wrapper for the following libraries:
 
 * [url.parse](https://nodejs.org/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost)
+* Saving of request body
 * [qs](https://github.com/ljharb/qs)
 * [busboy](https://github.com/mscdex/busboy)
+
+As a little bonus, it is also setting a request uuid to identify every request in logs etc.
 
 ## Installation
 
@@ -75,6 +78,8 @@ new App({
 			res.end('Hello world');
 			cb();
 		},
+		reqParser.clean
+		/*
 		function (req, res, cb) {
 
 			// Check if we have a form file, and if we do, remove it
@@ -83,6 +88,7 @@ new App({
 			}
 			cb();
 		}
+		*/
 	]
 });
 ```

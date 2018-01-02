@@ -1,6 +1,7 @@
 'use strict';
 
 const	topLogPrefix	= 'larvitreqparser: ./index.js: ',
+	EventEmitter	= require('events').EventEmitter,
 	uuidv4	= require('uuid/v4'),
 	//Busboy	= require('busboy'),
 	async	= require('async'),
@@ -19,6 +20,7 @@ function ReqParser(options) {
 
 	this.options	= options;
 }
+ReqParser.prototype.__proto__ = EventEmitter.prototype;
 
 ReqParser.prototype.parse = function parse(req, res, cb) {
 	const	tasks	= [],
@@ -41,7 +43,8 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 		if (req.ended) return cb();
 
 		if (req.processing) {
-
+			that.on('processed', cb);
+			return;
 		}
 
 		if (typeof req.on === 'function') {
@@ -70,7 +73,7 @@ ReqParser.prototype.parseUrl = function parseUrl(req, res, cb) {
 		host	= 'localhost';
 	}
 
-	req.urlParsed = url.parse(protocol + '://' + host + req.url, true);
+	req.urlParsed	= url.parse(protocol + '://' + host + req.url, true);
 	cb();
 };
 
@@ -87,7 +90,11 @@ ReqParser.prototype.writeRawBody = function writeRawBody(req) {
 };
 
 ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req) {
+	const	logPrefix	= topLogPrefix + 'writeRawBodyToMem() - reqUuid: ' + req.uuid + ' - ';
+
 	req.rawBody	= [];
+
+	log.debug(logPrefix + 'Running');
 
 	req.on('data', function (chunk) {
 		req.rawBody.push(chunk);
@@ -104,8 +111,12 @@ ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req) {
 };
 
 ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req) {
-	const	logPrefix	= topLogPrefix + 'writeRawBodyToFs() - ',
+	const	logPrefix	= topLogPrefix + 'writeRawBodyToFs() - reqUuid: ' + req.uuid + ' - ',
 		that	= this;
+
+	log.debug(logPrefix + 'Running');
+
+	req.processing	= true;
 
 	fs.ensureDir(that.options.storage, function (err) {
 		let	writeStream;
@@ -119,6 +130,8 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req) {
 
 			req.on('end', function () {
 				req.ended	= true;
+				req.processing	= false;
+				that.emit('processed');
 			});
 
 			return;
@@ -128,15 +141,16 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req) {
 
 		// This opens up the writeable stream to "rawBody"
 		writeStream	= fs.createWriteStream(req.rawBodyPath);
-		req.processing	= true;
 
 		// This pipes the request data to the file
 		req.pipe(writeStream);
 
 		writeStream.on('finish', function () {
 			// Important not to use req.on(end) here, since the write stream might not be finished yet
+			log.debug(logPrefix + 'writeStream.on(finnish)');
 			req.ended	= true;
 			req.processing	= false;
+			that.emit('processed');
 		});
 
 		writeStream.on('error', function (err) {
