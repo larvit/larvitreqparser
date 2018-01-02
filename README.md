@@ -80,16 +80,6 @@ new App({
 			cb();
 		},
 		reqParser.clean
-		/*
-		function (req, res, cb) {
-
-			// Check if we have a form file, and if we do, remove it
-			if (req.formFiles && req.formFiles.path) {
-				return fs.unlink(req.formFiles.path, cb);
-			}
-			cb();
-		}
-		*/
 	]
 });
 ```
