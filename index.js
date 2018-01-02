@@ -2,12 +2,14 @@
 
 const	topLogPrefix	= 'larvitreqparser: ./index.js: ',
 	EventEmitter	= require('events').EventEmitter,
+	Readable	= require('stream').Readable,
 	uuidv4	= require('uuid/v4'),
-	//Busboy	= require('busboy'),
+	Busboy	= require('busboy'),
 	async	= require('async'),
 	url	= require('url'),
 	log	= require('winston'),
-	fs	= require('fs-extra');
+	fs	= require('fs-extra'),
+	qs	= require('qs');
 
 function ReqParser(options) {
 	if ( ! options) {
@@ -22,39 +24,186 @@ function ReqParser(options) {
 }
 ReqParser.prototype.__proto__ = EventEmitter.prototype;
 
+ReqParser.prototype.clean = function clean(req, res, cb) {
+	const	logPrefix	= topLogPrefix + 'clean() - reqUuid: ' + req.uuid + ' - ',
+		that	= this;
+
+	if (that.options.storage === 'memory') {
+		return cb();
+	}
+
+	// Run callback first, we do not have to wait for the cleanup to be done
+	cb();
+
+	fs.remove(that.options.storage, function (err) {
+		if (err) {
+			log.error(logPrefix + 'Could not remove options.storage: "' + that.options.storage + '", err: ' + err.message);
+		}
+	});
+};
+
 ReqParser.prototype.parse = function parse(req, res, cb) {
 	const	tasks	= [],
 		that	= this;
 
 	req.uuid	= uuidv4();
-	req.ended	= false;
+	req.reqParser	= {};
 
 	// Raw body
-	// This must happen before the async tasks!
-	that.writeRawBody(req);
+	tasks.push(function (cb) {
+		that.writeRawBody(req, cb);
+	});
 
 	// Parse URL
 	tasks.push(function (cb) {
 		that.parseUrl(req, res, cb);
 	});
 
-	// Wait for req.ended
-	tasks.push(function (cb) {
-		if (req.ended) return cb();
+	if (req.headers) {
+		for (const headerName of Object.keys(req.headers)) {
+			if (headerName.toLowerCase() === 'content-type') {
+				// Handle application/x-www-form-urlencoded
+				if (req.headers[headerName] === 'application/x-www-form-urlencoded') {
+					tasks.push(function (cb) {
+						that.parseFormUrlEncoded(req, cb);
+					});
+				}
 
-		if (req.processing) {
-			that.on('processed', cb);
-			return;
+				if (req.headers[headerName].substring(0, 19) === 'multipart/form-data') {
+					tasks.push(function (cb) {
+						that.parseFormMultipart(req, cb);
+					});
+				}
+
+				break;
+			}
+		}
+	}
+
+	async.series(tasks, cb);
+};
+
+ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
+	const	busboy	= new Busboy({'headers': req.headers}),
+		that	= this;
+
+	req.formFields	= {};
+	req.formFiles	= {};
+
+	busboy.on('file', function(fieldName, file, filename, encoding, mimetype) {
+		const	formFile	= {};
+
+		formFile.filename	= filename;
+		formFile.encoding	= encoding;
+		formFile.mimetype	= mimetype;
+
+		if (that.options.storage === 'memory') {
+			formFile.buffer	= [];
+
+			file.on('data', function (data) {
+				formFile.buffer.push(data);
+			});
+		} else {
+			formFile.path	= that.options.storage + '/' + uuidv4();
+			formFile.writeStream	= fs.createWriteStream(formFile.path);
+			file.pipe(formFile.writeStream);
+			formFile.writeStream.on('finish', function () {
+				formFile.writtenToDisk	= true;
+			});
 		}
 
-		if (typeof req.on === 'function') {
-			req.on('end', cb);
+		file.on('end', function () {
+			if (that.options.storage === 'memory') {
+				formFile.buffer	= Buffer.concat(formFile.buffer);
+			}
+
+			if (fieldName.substring(fieldName.length - 2) === '[]') {
+				fieldName	= fieldName.substring(0, fieldName.length - 2);
+				if ( ! Array.isArray(req.formFiles[fieldName])) {
+					req.formFiles[fieldName]	= [];
+				}
+				req.formFiles[fieldName].push(formFile);
+			} else {
+				req.formFiles[fieldName]	= formFile;
+			}
+		});
+	});
+
+	busboy.on('field', function(fieldName, fieldVal/*, fieldNameTruncated, fieldValTruncated, encoding, mimetype*/) {
+		if (fieldName.substring(fieldName.length - 2) === '[]') {
+			fieldName = fieldName.substring(0, fieldName.length - 2);
+
+			if ( ! Array.isArray(req.formFields[fieldName])) {
+				req.formFields[fieldName]	= [];
+			}
+
+			req.formFields[fieldName].push(fieldVal);
 		} else {
-			cb();
+			req.formFields[fieldName]	= fieldVal;
 		}
 	});
 
-	async.series(tasks, cb);
+	busboy.on('finish', function () {
+		const	tasks	= [];
+
+		if (that.options.storage === 'memory') {
+			return cb();
+		}
+
+		// Walk through all files and make sure they are written to disk
+		for (const fieldName of Object.keys(req.formFiles)) {
+			let	files;
+
+			if (Array.isArray(req.formFiles[fieldName])) {
+				files	= req.formFiles[fieldName];
+			} else {
+				files	= [req.formFiles[fieldName]];
+			}
+
+			for (let i = 0; files[i] !== undefined; i ++) {
+				const	file	= files[i];
+				if (file.writtenToDisk !== true) {
+					tasks.push(function (cb) {
+						file.writeStream.on('finish', cb);
+					});
+				}
+			}
+		}
+
+		async.parallel(tasks, cb);
+	});
+
+	if (that.options.storage === 'memory') {
+		const	stream	= new Readable();
+
+		stream.push(req.rawBody);
+		stream.push(null);
+		stream.pipe(busboy);
+	} else {
+		const	readStream	= fs.createReadStream(req.rawBodyPath);
+
+		readStream.pipe(busboy);
+	}
+};
+
+ReqParser.prototype.parseFormUrlEncoded = function parseFormUrlEncoded(req, cb) {
+	const	logPrefix	= topLogPrefix + 'parseFormUrlEncoded() - reqUuid: ' + req.uuid + ' - ',
+		that	= this;
+
+	if (that.options.storage === 'memory') {
+		req.formFields	= qs.parse(req.rawBody.toString());
+		cb();
+	} else {
+		fs.readFile(req.rawBodyPath, function (err, content) {
+			if (err) {
+				log.error(logPrefix + 'Could not read req.rawBodyPath: "' + req.rawBodyPath + '", err: ' + err.message);
+				return cb(err);
+			}
+
+			req.formFields	= qs.parse(content.toString());
+			cb();
+		});
+	}
 };
 
 ReqParser.prototype.parseUrl = function parseUrl(req, res, cb) {
@@ -77,24 +226,26 @@ ReqParser.prototype.parseUrl = function parseUrl(req, res, cb) {
 	cb();
 };
 
-ReqParser.prototype.writeRawBody = function writeRawBody(req) {
+ReqParser.prototype.writeRawBody = function writeRawBody(req, cb) {
 	const	that	= this;
 
 	if (typeof req.on === 'function') {
 		if (that.options.storage === 'memory') {
-			that.writeRawBodyToMem(req);
+			that.writeRawBodyToMem(req, cb);
 		} else {
-			that.writeRawBodyToFs(req);
+			that.writeRawBodyToFs(req, cb);
 		}
+	} else {
+		cb();
 	}
 };
 
-ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req) {
+ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req, cb) {
 	const	logPrefix	= topLogPrefix + 'writeRawBodyToMem() - reqUuid: ' + req.uuid + ' - ';
 
-	req.rawBody	= [];
-
 	log.debug(logPrefix + 'Running');
+
+	req.rawBody	= [];
 
 	req.on('data', function (chunk) {
 		req.rawBody.push(chunk);
@@ -106,17 +257,15 @@ ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req) {
 		} else {
 			req.rawBody	= Buffer.concat(req.rawBody);
 		}
-		req.ended	= true;
+		cb();
 	});
 };
 
-ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req) {
+ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req, cb) {
 	const	logPrefix	= topLogPrefix + 'writeRawBodyToFs() - reqUuid: ' + req.uuid + ' - ',
 		that	= this;
 
 	log.debug(logPrefix + 'Running');
-
-	req.processing	= true;
 
 	fs.ensureDir(that.options.storage, function (err) {
 		let	writeStream;
@@ -129,9 +278,7 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req) {
 			});
 
 			req.on('end', function () {
-				req.ended	= true;
-				req.processing	= false;
-				that.emit('processed');
+				cb(err);
 			});
 
 			return;
@@ -148,13 +295,12 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req) {
 		writeStream.on('finish', function () {
 			// Important not to use req.on(end) here, since the write stream might not be finished yet
 			log.debug(logPrefix + 'writeStream.on(finnish)');
-			req.ended	= true;
-			req.processing	= false;
-			that.emit('processed');
+			cb();
 		});
 
 		writeStream.on('error', function (err) {
 			log.error(logPrefix + 'Can not write request body to disk. Path: "' + req.rawBodyPath + '", err: ' + err.message);
+			cb(err);
 		});
 	});
 };

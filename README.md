@@ -40,17 +40,17 @@ new App({
 
 			// req.urlParsed - URL parsed by require('url').parse()
 			// req.formFields
-			// req.formFiles
-			// req.formFiles.filename?
-			// req.formFiles.mimetype?
+			// req.formFiles[fieldName].filename
+			// req.formFiles[fieldName].mimetype
+			// req.formFiles[fieldName].encoding
 
 			// If storage === 'memory'
 			// req.rawBody
-			// req.formFiles.buffer
+			// req.formFiles[fieldName].buffer
 
 			// If storage is path on disk
 			// req.rawBodyPath
-			// req.formFiles.path
+			// req.formFiles[fieldName].path
 
 			res.end('Hello world');
 		}
