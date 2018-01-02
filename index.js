@@ -71,6 +71,11 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 
 				if (req.headers[headerName].substring(0, 19) === 'multipart/form-data') {
 					tasks.push(function (cb) {
+						if ( ! that.options.busboy) {
+							that.options.busboy	= {};
+						}
+
+						that.options.busboy.headers	= req.headers;
 						that.parseFormMultipart(req, cb);
 					});
 				}
@@ -84,7 +89,7 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 };
 
 ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
-	const	busboy	= new Busboy({'headers': req.headers}),
+	const	busboy	= new Busboy(this.options.busboy),
 		that	= this;
 
 	req.formFields	= {};
