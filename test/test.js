@@ -66,6 +66,7 @@ test('GET Https request, no host, no body', function (t) {
 	req.url	= '/foo?bar=baz';
 	req.connection	= {};
 	req.connection.encrypted	= true;
+	req.uuid	= 'test';
 
 	reqParser.parse(req, res, function (err) {
 		if (err) throw err;
@@ -76,6 +77,7 @@ test('GET Https request, no host, no body', function (t) {
 		t.equal(req.urlParsed.search,	'?bar=baz');
 		t.equal(req.urlParsed.hostname,	'localhost');
 		t.equal(req.urlParsed.port,	null);
+		t.equal(req.uuid,	'test');
 
 		t.end();
 	});

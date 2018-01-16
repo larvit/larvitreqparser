@@ -46,7 +46,9 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 	const	tasks	= [],
 		that	= this;
 
-	req.uuid	= uuidv4();
+	if ( ! req.uuid) {
+		req.uuid	= uuidv4();
+	}
 	req.reqParser	= {};
 
 	// Raw body
