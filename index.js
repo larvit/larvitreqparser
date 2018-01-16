@@ -195,7 +195,7 @@ ReqParser.prototype.parseFormUrlEncoded = function parseFormUrlEncoded(req, cb) 
 	const	logPrefix	= topLogPrefix + 'parseFormUrlEncoded() - reqUuid: ' + req.uuid + ' - ',
 		that	= this;
 
-	if ( ! Buffer.isBuffer(req.rawBody)) {
+	if ( ! Buffer.isBuffer(req.rawBody)  && ! req.rawBodyPath) {
 		req.formFields	= {};
 		return cb();
 	}
