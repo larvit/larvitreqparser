@@ -40,18 +40,23 @@ new App({
 			// Now the following properties is populated depending on the request type:
 
 			// req.urlParsed - URL parsed by require('url').parse()
+
+			// Will be populated when a HTML form is posted either as multipart or as default html form.
 			// req.formFields
+
+			// Will be populated when a HTML multipart form is posted with files
+			// !!! NOT when sending just a single file as body, that will only populate req.rawBody (see below)
 			// req.formFiles[fieldName].filename
 			// req.formFiles[fieldName].mimetype
 			// req.formFiles[fieldName].encoding
 
 			// If storage === 'memory'
 			// req.rawBody
-			// req.formFiles[fieldName].buffer
+			// req.formFiles[fieldName].buffer (Only when multipart form is posted)
 
 			// If storage is path on disk
 			// req.rawBodyPath
-			// req.formFiles[fieldName].path
+			// req.formFiles[fieldName].path (Only when multipart form is posted)
 
 			res.end('Hello world');
 		}
