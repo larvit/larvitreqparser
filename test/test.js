@@ -338,3 +338,32 @@ test('POST, multipart/form-data, fs storage', function (t) {
 		});
 	});
 });
+
+test('POST, empty form should not crasch application', function (t) {
+	const	reqParser	= new ReqParser();
+
+	let	server,
+		port;
+
+	startServer(reqParser, function (req, res) {
+		if (req.err) throw req.err;
+		res.end();
+		server.close(function (err) { if (err) throw err; });
+
+		t.equals(JSON.stringify(req.formFields),	'{}');
+		t.end();
+	}, function (err, result) {
+		if (err) throw err;
+
+		server	= result;
+		port	= server.address().port;
+
+		request.post({
+			'url':	'http://127.0.0.1:' + port + '/',
+			'headers':  {
+				'Content-Type': 'application/x-www-form-urlencoded'
+			},
+			'body': undefined
+		});
+	});
+});
