@@ -35,7 +35,7 @@ const App       = require('larvitbase'),
 new App({
 	'httpOptions': 8001,
 	'middleware': [
-		reqParser.parse,
+		reqParser.parse.bind(reqParser), // We must bind() the context or we'll lose it
 		function (req, res) {
 			// Now the following properties is populated depending on the request type:
 
