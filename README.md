@@ -28,7 +28,7 @@ Usage with [larvitbase](https://github.com/larvit/larvitbase)
 const App       = require('larvitbase'),
       ReqParser = require('larvitreqparser'),
       reqParser = new ReqParser({
-      	'storage': 'memory' // Default. Options: 'memory' or a file path, for example '/tmp'.
+      	'storage': 'memory', // Default. Options: 'memory' or a file path, for example '/tmp'.
       	'busboy': {} // Custom options for busboy, see https://github.com/mscdex/busboy for options
       });
 
