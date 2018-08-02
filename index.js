@@ -97,7 +97,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	req.formFields	= {};
 	req.formFiles	= {};
 
-	busboy.on('file', function(fieldName, file, filename, encoding, mimetype) {
+	busboy.on('file', function (fieldName, file, filename, encoding, mimetype) {
 		const	formFile	= {};
 
 		formFile.filename	= filename;
@@ -136,7 +136,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 		});
 	});
 
-	busboy.on('field', function(fieldName, fieldVal/*, fieldNameTruncated, fieldValTruncated, encoding, mimetype*/) {
+	busboy.on('field', function (fieldName, fieldVal/*, fieldNameTruncated, fieldValTruncated, encoding, mimetype*/) {
 		if (fieldName.substring(fieldName.length - 2) === '[]') {
 			fieldName = fieldName.substring(0, fieldName.length - 2);
 
