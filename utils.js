@@ -3,8 +3,8 @@
 /**
  * Checks if a request is parseable by formidable
  *
- * @param obj req - standard request object
- * @return boolean
+ * @param   {obj}  req - standard request object
+ * @returns {bool}     - true or false
  */
 function formidableParseable(req) {
 	// For reference this is taken from formidable/lib/incoming_form.js - IncomingForm.prototype._parseContentType definition
@@ -16,12 +16,12 @@ function formidableParseable(req) {
 	// Make sure to pick up content type header case insensitive
 	for (const key of Object.keys(req.headers)) {
 		if (key.toLowerCase() === 'content-type' && req.headers['content-type'] === undefined) {
-			req.headers['content-type']	= req.headers[key];
+			req.headers['content-type'] = req.headers[key];
 			break;
 		}
 	}
 
-	if ( ! req.headers['content-type']) {
+	if (! req.headers['content-type']) {
 		return false;
 	}
 
