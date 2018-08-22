@@ -29,8 +29,10 @@ const App       = require('larvitbase'),
 			ReqParser = require('larvitreqparser'),
       reqParser = new ReqParser({
 				// OPTIONAL
-				'storage':       'memory', // Default. Options: 'memory' or a file path, for example '/tmp'.
-      	'busboyOptions':  {}       // Custom busboy options, see https://github.com/mscdex/busboy for options
+				'fs':             require('fs-extra'),                        // Needs some extra functions from fs-extra
+				'log':            new (new (require('larvitutils'))()).Log(), // Compatible with the winston logging library
+				'storage':        'memory',                                   // Default. Options: 'memory' or a file path, for example '/tmp'.
+      	'busboyOptions':  {}                                          // Custom busboy options, see https://github.com/mscdex/busboy for options
       });
 
 new App({
