@@ -26,12 +26,12 @@
   },
   "homepage": "https://github.com/larvit/larvitreqparser#readme",
   "devDependencies": {
-    "coveralls": "^3.0.0",
-    "eslint": "^5.2.0",
-    "istanbul": "^0.4.5",
-    "request": "^2.83.0",
-    "tape": "^4.8.0",
-    "tape-eslint": "^1.2.1"
+    "coveralls": "3.0.2",
+    "eslint": "5.4.0",
+    "istanbul": "0.4.5",
+    "request": "2.88.0",
+    "tape": "4.9.1",
+    "tape-eslint": "1.2.1"
   },
   "dependencies": {
     "async": "^2.6.0",
