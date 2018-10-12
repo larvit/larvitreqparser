@@ -351,7 +351,9 @@ test('POST, multipart/form-data, fs storage', function (t) {
 			if (err) throw err;
 
 			setTimeout(function () {
-				t.equal(fs.existsSync(storagePath), false);
+				t.equal(fs.existsSync(storagePath), true);
+				t.equal(fs.readdirSync(storagePath).length, 0);
+
 				t.end();
 			}, 50);
 		});
