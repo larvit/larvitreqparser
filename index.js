@@ -7,6 +7,7 @@ const uuidv4       = require('uuid/v4');
 const Busboy       = require('busboy');
 const LUtils       = require('larvitutils');
 const async        = require('async');
+const path		   = require('path');
 const url          = require('url');
 const qs           = require('qs');
 
@@ -58,9 +59,19 @@ ReqParser.prototype.clean = function clean(req, res, cb) {
 		return;
 	}
 
-	that.fs.remove(that.storage, function (err) {
+	that.fs.readdir(that.storage, function (err, files) {
 		if (err) {
-			that.log.error(logPrefix + 'Could not remove options.storage: "' + that.storage + '", err: ' + err.message);
+			that.log.error(logPrefix + 'Could not read directory: "' + that.storage + '", err: ' + err.message);
+
+			return;
+		}
+
+		for (const file of files) {
+			that.fs.unlink(path.join(that.storage, file), function (err) {
+				if (err) {
+					that.log.error(logPrefix + 'Could not remove file "' + path.join(that.storage, file) + '", err: ' + err.message);
+				}
+			});
 		}
 	});
 };
