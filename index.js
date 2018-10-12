@@ -24,7 +24,7 @@ function ReqParser(options) {
 	that.options = options || {};
 
 	if (! that.options.storage) {
-		that.options.storage	= 'memory';
+		that.options.storage = 'memory';
 	}
 
 	if (! that.options.log) {
@@ -49,14 +49,14 @@ ReqParser.prototype.__proto__ = EventEmitter.prototype;
 
 ReqParser.prototype.clean = function clean(req, res, cb) {
 	const logPrefix = topLogPrefix + 'clean() - reqUuid: ' + req.uuid + ' - ';
-	const that      = this;
-
-	if (that.options.storage === 'memory') {
-		return cb();
-	}
+	const that = this;
 
 	// Run callback first, we do not have to wait for the cleanup to be done
 	cb();
+
+	if (that.options.storage === 'memory') {
+		return;
+	}
 
 	that.fs.remove(that.storage, function (err) {
 		if (err) {
@@ -111,10 +111,10 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 
 ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	const busboy = new Busboy(this.busboyOptions);
-	const that   = this;
+	const that = this;
 
 	req.formFields = {};
-	req.formFiles  = {};
+	req.formFiles = {};
 
 	busboy.on('file', function (fieldName, file, filename, encoding, mimetype) {
 		const formFile = {};
@@ -130,7 +130,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 				formFile.buffer.push(data);
 			});
 		} else {
-			formFile.path        = that.storage + '/' + uuidv4();
+			formFile.path = that.storage + '/' + uuidv4();
 			formFile.writeStream = that.fs.createWriteStream(formFile.path);
 			file.pipe(formFile.writeStream);
 			formFile.writeStream.on('finish', function () {
@@ -215,7 +215,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 
 ReqParser.prototype.parseFormUrlEncoded = function parseFormUrlEncoded(req, cb) {
 	const logPrefix = topLogPrefix + 'parseFormUrlEncoded() - reqUuid: ' + req.uuid + ' - ';
-	const that      = this;
+	const that = this;
 
 	if (! Buffer.isBuffer(req.rawBody) && ! req.rawBodyPath) {
 		req.formFields = {};
@@ -298,7 +298,9 @@ ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req, cb) {
 
 ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req, cb) {
 	const logPrefix = topLogPrefix + 'writeRawBodyToFs() - reqUuid: ' + req.uuid + ' - ';
-	const that      = this;
+	const that = this;
+
+	let cbRan = false;
 
 	that.log.debug(logPrefix + 'Running');
 
@@ -313,6 +315,11 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req, cb) {
 			});
 
 			req.on('end', function () {
+				if (cbRan) {
+					that.log.error(logPrefix + 'Cb have already been ran. Should run with err: ' + err.message);
+				}
+
+				cbRan = true;
 				cb(err);
 			});
 
@@ -330,11 +337,25 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req, cb) {
 		writeStream.on('finish', function () {
 			// Important not to use req.on(end) here, since the write stream might not be finished yet
 			that.log.debug(logPrefix + 'writeStream.on(finnish)');
+
+			if (cbRan) {
+				that.log.error(logPrefix + 'Cb have already been ran');
+
+				return;
+			}
+
+			cbRan = true;
 			cb();
 		});
 
 		writeStream.on('error', function (err) {
 			that.log.error(logPrefix + 'Can not write request body to disk. Path: "' + req.rawBodyPath + '", err: ' + err.message);
+
+			if (cbRan) {
+				that.log.error(logPrefix + 'Cb have already been ran. Should run with err: Can not write request body to disk. Path: "' + req.rawBodyPath + '", err: ' + err.message);
+			}
+
+			cbRan = true;
 			cb(err);
 		});
 	});
