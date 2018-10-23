@@ -99,7 +99,7 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 		for (const headerName of Object.keys(req.headers)) {
 			if (headerName.toLowerCase() === 'content-type') {
 				// Handle application/x-www-form-urlencoded
-				if (req.headers[headerName] === 'application/x-www-form-urlencoded') {
+				if (req.headers[headerName].startsWith('application/x-www-form-urlencoded')) {
 					tasks.push(function (cb) {
 						that.parseFormUrlEncoded(req, cb);
 					});
