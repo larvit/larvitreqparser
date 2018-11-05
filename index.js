@@ -124,6 +124,8 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	const busboy = new Busboy(this.busboyOptions);
 	const that = this;
 
+	let fieldsStr = '';
+
 	req.formFields = {};
 	req.formFiles = {};
 
@@ -167,21 +169,17 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	});
 
 	busboy.on('field', function (fieldName, fieldVal) {
-		if (fieldName.substring(fieldName.length - 2) === '[]') {
-			fieldName = fieldName.substring(0, fieldName.length - 2);
-
-			if (! Array.isArray(req.formFields[fieldName])) {
-				req.formFields[fieldName] = [];
-			}
-
-			req.formFields[fieldName].push(fieldVal);
-		} else {
-			req.formFields[fieldName] = fieldVal;
-		}
+		fieldsStr += encodeURIComponent(fieldName) + '=' + encodeURIComponent(fieldVal) + '&';
 	});
 
 	busboy.on('finish', function () {
 		const tasks = [];
+
+		if (fieldsStr.endsWith('&')) {
+			fieldsStr = fieldsStr.substr(0, fieldsStr.length - 1);
+		}
+
+		req.formFields = qs.parse(fieldsStr);
 
 		if (that.options.storage === 'memory') {
 			return cb();
