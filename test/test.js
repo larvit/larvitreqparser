@@ -285,7 +285,7 @@ test('POST, multipart/form-data, memory storage', function (t) {
 			if (err) throw err;
 		});
 
-		t.equal(JSON.stringify(req.formFields), '{"foo":"bar","ove":["första ove"],"beng tops":"öber alles & ännu mer"}');
+		t.equal(JSON.stringify(req.formFields), '{"foo":"bar","ove":["första ove"],"beng tops":"öber alles & ännu mer","untz":{"firstname":"kalle","lastname":{"first":"benktsson","second":"lurresson"}}}');
 		t.equal(req.formFiles.enLitenBuffer.buffer.toString(), 'foo feng fall');
 		t.equal(req.formFiles.arrWithBuffers[0].buffer.toString(), 'apa');
 		t.equal(req.formFiles.arrWithBuffers[1].buffer.toString(), 'bengbison');
@@ -305,6 +305,9 @@ test('POST, multipart/form-data, memory storage', function (t) {
 		formData.foo = 'bar';
 		formData['ove[]'] = 'första ove';
 		formData['beng tops'] = 'öber alles & ännu mer';
+		formData['untz[firstname]'] = 'kalle';
+		formData['untz[lastname][first]'] = 'benktsson';
+		formData['untz[lastname][second]'] = 'lurresson';
 		formData.enLitenBuffer = Buffer.from('foo feng fall');
 		formData['arrWithBuffers[]'] = [
 			Buffer.from('apa'),
