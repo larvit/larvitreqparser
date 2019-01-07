@@ -218,6 +218,10 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	} else {
 		const readStream = that.fs.createReadStream(req.rawBodyPath);
 
+		readStream.on('error', function (err) {
+			that.log.error(logPrefix + 'Can not create read stream to file. Path: "' + req.rawBodyPath + '", err: ' + err.message);
+		});
+
 		readStream.pipe(busboy);
 	}
 };
