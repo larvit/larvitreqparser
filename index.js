@@ -122,6 +122,7 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 
 ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	const busboy = new Busboy(this.busboyOptions);
+	const logPrefix = topLogPrefix + 'parseFormMultipart() - reqUuid: ' + req.uuid + ' - ';
 	const that = this;
 
 	let fieldsStr = '';
