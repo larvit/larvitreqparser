@@ -7,7 +7,6 @@ const uuidv4       = require('uuid/v4');
 const Busboy       = require('busboy');
 const LUtils       = require('larvitutils');
 const async        = require('async');
-const path		   = require('path');
 const url          = require('url');
 const qs           = require('qs');
 
@@ -51,6 +50,8 @@ ReqParser.prototype.__proto__ = EventEmitter.prototype;
 ReqParser.prototype.clean = function clean(req, res, cb) {
 	const logPrefix = topLogPrefix + 'clean() - reqUuid: ' + req.uuid + ' - ';
 	const that = this;
+	const tasks = [];
+	const files = [];
 
 	// Run callback first, we do not have to wait for the cleanup to be done
 	cb();
@@ -59,21 +60,35 @@ ReqParser.prototype.clean = function clean(req, res, cb) {
 		return;
 	}
 
-	that.fs.readdir(that.storage, function (err, files) {
-		if (err) {
-			that.log.error(logPrefix + 'Could not read directory: "' + that.storage + '", err: ' + err.message);
+	// Add rawBodyPath to files to be removed if it exists
+	if (req.rawBodyPath) files.push(req.rawBodyPath);
 
-			return;
-		}
-
-		for (const file of files) {
-			that.fs.unlink(path.join(that.storage, file), function (err) {
-				if (err) {
-					that.log.error(logPrefix + 'Could not remove file "' + path.join(that.storage, file) + '", err: ' + err.message);
+	// Add form files to files to be removed if they exist
+	if (req.formFiles && Object.keys(req.formFiles).length) {
+		for (const formFile of Object.keys(req.formFiles)) {
+			if (Array.isArray(req.formFiles[formFile])) {
+				for (const file of req.formFiles[formFile]) {
+					if (file.path) files.push(file.path);
 				}
-			});
+			} else if (req.formFiles[formFile].path) {
+				files.push(req.formFiles[formFile].path);
+			}
 		}
-	});
+	}
+
+	// Remove files
+	for (const file of files) {
+		tasks.push(function (cb) {
+			that.fs.unlink(file, function (err) {
+				if (err) {
+					that.log.verbose(logPrefix + 'Could not remove file "' + file + '", err: ' + err.message);
+				}
+				cb();
+			});
+		});
+	}
+
+	async.series(tasks, function () {});
 };
 
 ReqParser.prototype.parse = function parse(req, res, cb) {

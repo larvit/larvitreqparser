@@ -421,3 +421,100 @@ test('POST, empty form should not crasch application', function (t) {
 		});
 	});
 });
+
+test('clean will remove temporary form files', function (t) {
+	const storagePath = tmpDir + '/' + uuidv4();
+	const reqParser = new ReqParser({ 'storage': storagePath, 'log': log });
+
+	let server;
+	let port;
+
+	startServer(reqParser, function (req, res) {
+		if (req.err) throw req.err;
+		res.end();
+		server.close(function (err) {
+			if (err) throw err;
+		});
+
+		t.equal(fs.existsSync(req.formFiles.customFile.path), true);
+		t.equal(fs.existsSync(req.formFiles.arrWithBuffers[0].path), true);
+		t.equal(fs.existsSync(req.formFiles.arrWithBuffers[1].path), true);
+
+		reqParser.clean(req, res, function (err) {
+			if (err) throw err;
+
+			setTimeout(function () {
+				t.equal(fs.existsSync(req.formFiles.customFile.path), false);
+				t.equal(fs.existsSync(req.formFiles.arrWithBuffers[0].path), false);
+				t.equal(fs.existsSync(req.formFiles.arrWithBuffers[1].path), false);
+				t.end();
+			}, 50);
+		});
+	}, function (err, result) {
+		const formData = {};
+
+		if (err) throw err;
+
+		server = result;
+		port = server.address().port;
+
+		formData.customFile = {
+			'value': Buffer.from('skruppelräv'),
+			'options': {
+				'filename': 'reven.txt',
+				'contentType': 'text/plain'
+			}
+		};
+
+		formData['arrWithBuffers[]'] = [
+			Buffer.from('apa'),
+			Buffer.from('bengbison')
+		];
+
+		request({
+			'url': 'http://127.0.0.1:' + port + '/',
+			'formData': formData
+		});
+	});
+});
+
+test('clean will remove temporary raw body file', function (t) {
+	const storagePath = tmpDir + '/' + uuidv4();
+	const reqParser = new ReqParser({ 'storage': storagePath, 'log': log });
+
+	let server;
+	let port;
+
+	startServer(reqParser, function (req, res) {
+		if (req.err) throw req.err;
+		res.end();
+		server.close(function (err) {
+			if (err) throw err;
+		});
+
+		t.equal(fs.existsSync(req.rawBodyPath), true);
+
+		reqParser.clean(req, res, function (err) {
+			if (err) throw err;
+
+			setTimeout(function () {
+				t.equal(fs.existsSync(req.rawBodyPath), false);
+				t.end();
+			}, 50);
+		});
+	}, function (err, result) {
+		const formData = {};
+
+		if (err) throw err;
+
+		server = result;
+		port = server.address().port;
+
+		formData.foo = 'bar';
+
+		request({
+			'url': 'http://127.0.0.1:' + port + '/',
+			'formData': formData
+		});
+	});
+});
