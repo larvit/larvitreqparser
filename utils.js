@@ -21,7 +21,7 @@ function formidableParseable(req) {
 		}
 	}
 
-	if (! req.headers['content-type']) {
+	if (!req.headers['content-type']) {
 		return false;
 	}
 
@@ -45,4 +45,4 @@ function formidableParseable(req) {
 	return false;
 };
 
-exports.formidableParseable	= formidableParseable;
+exports.formidableParseable = formidableParseable;

@@ -2,20 +2,20 @@
 
 const topLogPrefix = 'larvitreqparser: ./index.js: ';
 const EventEmitter = require('events').EventEmitter;
-const Readable     = require('stream').Readable;
-const uuidv4       = require('uuid/v4');
-const Busboy       = require('busboy');
-const LUtils       = require('larvitutils');
-const async        = require('async');
-const url          = require('url');
-const qs           = require('qs');
+const Readable = require('stream').Readable;
+const uuidv4 = require('uuid/v4');
+const Busboy = require('busboy');
+const LUtils = require('larvitutils');
+const async = require('async');
+const url = require('url');
+const qs = require('qs');
 
 /**
  * Main module function
  * @param {obj} options - {
- * 	log:     log object instance  - defaults to larvitutils simple logger
- * 	fs:      fs instance          - defaults to fs-extra module
- * 	storage: storage type, string - defaults to "memory"
+ *   log:     log object instance  - defaults to larvitutils simple logger
+ *   fs:      fs instance          - defaults to fs-extra module
+ *   storage: storage type, string - defaults to "memory"
  * }
  */
 function ReqParser(options) {
@@ -23,21 +23,21 @@ function ReqParser(options) {
 
 	that.options = options || {};
 
-	if (! that.options.storage) {
+	if (!that.options.storage) {
 		that.options.storage = 'memory';
 	}
 
-	if (! that.options.log) {
+	if (!that.options.log) {
 		const lUtils = new LUtils();
 
 		that.options.log = new lUtils.Log();
 	}
 
-	if (! that.options.fs) {
+	if (!that.options.fs) {
 		that.options.fs = require('fs-extra');
 	}
 
-	if (! that.options.busboyOptions) {
+	if (!that.options.busboyOptions) {
 		that.options.busboyOptions = {};
 	}
 
@@ -93,9 +93,9 @@ ReqParser.prototype.clean = function clean(req, res, cb) {
 
 ReqParser.prototype.parse = function parse(req, res, cb) {
 	const tasks = [];
-	const that  = this;
+	const that = this;
 
-	if (! req.uuid) {
+	if (!req.uuid) {
 		req.uuid = uuidv4();
 	}
 	req.reqParser = {};
@@ -162,7 +162,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 			formFile.path = that.storage + '/' + uuidv4();
 			formFile.writeStream = that.fs.createWriteStream(formFile.path);
 			file.pipe(formFile.writeStream);
-			formFile.writeStream.on('finish', function () {
+			formFile.writeStream.on('close', function () {
 				formFile.writtenToDisk = true;
 			});
 		}
@@ -174,7 +174,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 
 			if (fieldName.substring(fieldName.length - 2) === '[]') {
 				fieldName = fieldName.substring(0, fieldName.length - 2);
-				if (! Array.isArray(req.formFiles[fieldName])) {
+				if (!Array.isArray(req.formFiles[fieldName])) {
 					req.formFiles[fieldName] = [];
 				}
 				req.formFiles[fieldName].push(formFile);
@@ -211,12 +211,12 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 				files = [req.formFiles[fieldName]];
 			}
 
-			for (let i = 0; files[i] !== undefined; i ++) {
+			for (let i = 0; files[i] !== undefined; i++) {
 				const file = files[i];
 
 				if (file.writtenToDisk !== true) {
 					tasks.push(function (cb) {
-						file.writeStream.on('finish', cb);
+						file.writeStream.on('close', cb);
 					});
 				}
 			}
@@ -246,7 +246,7 @@ ReqParser.prototype.parseFormUrlEncoded = function parseFormUrlEncoded(req, cb) 
 	const logPrefix = topLogPrefix + 'parseFormUrlEncoded() - reqUuid: ' + req.uuid + ' - ';
 	const that = this;
 
-	if (! Buffer.isBuffer(req.rawBody) && ! req.rawBodyPath) {
+	if (!Buffer.isBuffer(req.rawBody) && !req.rawBodyPath) {
 		req.formFields = {};
 
 		return cb();
@@ -305,7 +305,7 @@ ReqParser.prototype.writeRawBody = function writeRawBody(req, cb) {
 
 ReqParser.prototype.writeRawBodyToMem = function writeRawBodyToMem(req, cb) {
 	const logPrefix = topLogPrefix + 'writeRawBodyToMem() - reqUuid: ' + req.uuid + ' - ';
-	const that      = this;
+	const that = this;
 
 	that.log.debug(logPrefix + 'Running');
 
@@ -363,9 +363,9 @@ ReqParser.prototype.writeRawBodyToFs = function writeRawBodyToFs(req, cb) {
 		// This pipes the request data to the file
 		req.pipe(writeStream);
 
-		writeStream.on('finish', function () {
+		writeStream.on('close', function () {
 			// Important not to use req.on(end) here, since the write stream might not be finished yet
-			that.log.debug(logPrefix + 'writeStream.on(finnish)');
+			that.log.debug(logPrefix + 'writeStream.on(close)');
 
 			if (cbRan) {
 				that.log.error(logPrefix + 'Cb have already been ran');
