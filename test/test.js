@@ -55,7 +55,7 @@ test('GET Http request, no body, no passed log instance', function (t) {
 });
 
 test('GET Https request, no host, no body', function (t) {
-	const reqParser = new ReqParser({'log': log});
+	const reqParser = new ReqParser({log: log});
 	const req = {};
 	const res = {};
 
@@ -67,20 +67,20 @@ test('GET Https request, no host, no body', function (t) {
 	reqParser.parse(req, res, function (err) {
 		if (err) throw err;
 
-		t.equal(req.urlParsed.protocol,  'https:');
-		t.equal(req.urlParsed.pathname,  '/foo');
+		t.equal(req.urlParsed.protocol, 'https:');
+		t.equal(req.urlParsed.pathname, '/foo');
 		t.equal(req.urlParsed.query.bar, 'baz');
-		t.equal(req.urlParsed.search,    '?bar=baz');
-		t.equal(req.urlParsed.hostname,  'localhost');
-		t.equal(req.urlParsed.port,      null);
-		t.equal(req.uuid,                'test');
+		t.equal(req.urlParsed.search, '?bar=baz');
+		t.equal(req.urlParsed.hostname, 'localhost');
+		t.equal(req.urlParsed.port, null);
+		t.equal(req.uuid, 'test');
 
 		t.end();
 	});
 });
 
 test('POST, raw body, memory storage', function (t) {
-	const reqParser = new ReqParser({'log': log});
+	const reqParser = new ReqParser({log: log});
 
 	let server;
 	let port;
@@ -102,15 +102,15 @@ test('POST, raw body, memory storage', function (t) {
 		server = result;
 		port = server.address().port;
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'body': 'foobar'
+			url: 'http://127.0.0.1:' + port + '/',
+			body: 'foobar'
 		});
 	});
 });
 
 test('POST, raw body, fs storage', function (t) {
 	const storagePath = tmpDir + '/' + uuidv4();
-	const reqParser = new ReqParser({'storage': storagePath, 'log': log});
+	const reqParser = new ReqParser({storage: storagePath, log: log});
 
 	let server;
 	let port;
@@ -122,7 +122,7 @@ test('POST, raw body, fs storage', function (t) {
 			if (err) throw err;
 		});
 
-		t.equal(fs.readFileSync(req.rawBodyPath).toString('hex'),	Buffer.from('foobar').toString('hex'));
+		t.equal(fs.readFileSync(req.rawBodyPath).toString('hex'), Buffer.from('foobar').toString('hex'));
 
 		fs.remove(storagePath);
 
@@ -132,8 +132,8 @@ test('POST, raw body, fs storage', function (t) {
 		server = result;
 		port = server.address().port;
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'body': 'foobar'
+			url: 'http://127.0.0.1:' + port + '/',
+			body: 'foobar'
 		});
 	});
 });
@@ -141,10 +141,10 @@ test('POST, raw body, fs storage', function (t) {
 test('POST, raw body, custom fs storage and busboy options', function (t) {
 	const storagePath = tmpDir + '/' + uuidv4();
 	const reqParser = new ReqParser({
-		'storage': storagePath,
-		'log': log,
-		'fs': require('fs-extra'),
-		'busboyOptions': {'defCharset': 'utf8'}
+		storage: storagePath,
+		log: log,
+		fs: require('fs-extra'),
+		busboyOptions: {defCharset: 'utf8'}
 	});
 
 	let server;
@@ -157,7 +157,7 @@ test('POST, raw body, custom fs storage and busboy options', function (t) {
 			if (err) throw err;
 		});
 
-		t.equal(fs.readFileSync(req.rawBodyPath).toString('hex'),	Buffer.from('foobar').toString('hex'));
+		t.equal(fs.readFileSync(req.rawBodyPath).toString('hex'), Buffer.from('foobar').toString('hex'));
 
 		fs.remove(storagePath);
 
@@ -167,15 +167,15 @@ test('POST, raw body, custom fs storage and busboy options', function (t) {
 		server = result;
 		port = server.address().port;
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'body': 'foobar'
+			url: 'http://127.0.0.1:' + port + '/',
+			body: 'foobar'
 		});
 	});
 });
 
 test('POST, raw body, fs storage, invalid path', function (t) {
 	const storagePath = '/no_access';
-	const reqParser = new ReqParser({'storage': storagePath, 'log': log});
+	const reqParser = new ReqParser({storage: storagePath, log: log});
 
 	let server;
 	let port;
@@ -195,14 +195,14 @@ test('POST, raw body, fs storage, invalid path', function (t) {
 		server = result;
 		port = server.address().port;
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'body': 'foobar'
+			url: 'http://127.0.0.1:' + port + '/',
+			body: 'foobar'
 		});
 	});
 });
 
 test('POST, application/x-www-form-urlencoded, memory storage', function (t) {
-	const reqParser = new ReqParser({'log': log});
+	const reqParser = new ReqParser({log: log});
 
 	let server;
 	let port;
@@ -223,9 +223,9 @@ test('POST, application/x-www-form-urlencoded, memory storage', function (t) {
 		server = result;
 		port = server.address().port;
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'form': {
-				'foo': 'bar',
+			url: 'http://127.0.0.1:' + port + '/',
+			form: {
+				foo: 'bar',
 				'beng tops': [
 					'arr',
 					'ay',
@@ -238,7 +238,7 @@ test('POST, application/x-www-form-urlencoded, memory storage', function (t) {
 
 test('POST, application/x-www-form-urlencoded, fs storage', function (t) {
 	const storagePath = tmpDir + '/' + uuidv4();
-	const reqParser = new ReqParser({'storage': storagePath, 'log': log});
+	const reqParser = new ReqParser({storage: storagePath, log: log});
 
 	let server;
 	let port;
@@ -259,9 +259,9 @@ test('POST, application/x-www-form-urlencoded, fs storage', function (t) {
 		server = result;
 		port = server.address().port;
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'form': {
-				'foo': 'bar',
+			url: 'http://127.0.0.1:' + port + '/',
+			form: {
+				foo: 'bar',
 				'beng tops': [
 					'arr',
 					'ay',
@@ -273,7 +273,7 @@ test('POST, application/x-www-form-urlencoded, fs storage', function (t) {
 });
 
 test('POST, multipart/form-data, memory storage', function (t) {
-	const reqParser = new ReqParser({'log': log});
+	const reqParser = new ReqParser({log: log});
 
 	let server;
 	let port;
@@ -314,23 +314,23 @@ test('POST, multipart/form-data, memory storage', function (t) {
 			Buffer.from('bengbison')
 		];
 		formData.customFile = {
-			'value': Buffer.from('skruppelräv'),
-			'options': {
-				'filename': 'reven.txt',
-				'contentType': 'text/plain'
+			value: Buffer.from('skruppelräv'),
+			options: {
+				filename: 'reven.txt',
+				contentType: 'text/plain'
 			}
 		};
 
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'formData': formData
+			url: 'http://127.0.0.1:' + port + '/',
+			formData: formData
 		});
 	});
 });
 
 test('POST, multipart/form-data, fs storage', function (t) {
 	const storagePath = tmpDir + '/' + uuidv4();
-	const reqParser = new ReqParser({'storage': storagePath, 'log': log});
+	const reqParser = new ReqParser({storage: storagePath, log: log});
 
 	let server;
 	let port;
@@ -366,7 +366,7 @@ test('POST, multipart/form-data, fs storage', function (t) {
 		if (err) throw err;
 
 		server = result;
-		port   = server.address().port;
+		port = server.address().port;
 
 		formData.foo = 'bar';
 		formData['ove[]'] = 'första ove';
@@ -377,22 +377,22 @@ test('POST, multipart/form-data, fs storage', function (t) {
 			Buffer.from('bengbison')
 		];
 		formData.customFile = {
-			'value': Buffer.from('skruppelräv'),
-			'options': {
-				'filename': 'reven.txt',
-				'contentType': 'text/plain'
+			value: Buffer.from('skruppelräv'),
+			options: {
+				filename: 'reven.txt',
+				contentType: 'text/plain'
 			}
 		};
 
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'formData': formData
+			url: 'http://127.0.0.1:' + port + '/',
+			formData: formData
 		});
 	});
 });
 
 test('POST, empty form should not crasch application', function (t) {
-	const reqParser = new ReqParser({'log': log});
+	const reqParser = new ReqParser({log: log});
 
 	let server;
 	let port;
@@ -413,18 +413,18 @@ test('POST, empty form should not crasch application', function (t) {
 		port = server.address().port;
 
 		request.post({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'headers': {
+			url: 'http://127.0.0.1:' + port + '/',
+			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded'
 			},
-			'body': undefined
+			body: undefined
 		});
 	});
 });
 
 test('clean will remove temporary form files', function (t) {
 	const storagePath = tmpDir + '/' + uuidv4();
-	const reqParser = new ReqParser({ 'storage': storagePath, 'log': log });
+	const reqParser = new ReqParser({ storage: storagePath, log: log });
 
 	let server;
 	let port;
@@ -459,10 +459,10 @@ test('clean will remove temporary form files', function (t) {
 		port = server.address().port;
 
 		formData.customFile = {
-			'value': Buffer.from('skruppelräv'),
-			'options': {
-				'filename': 'reven.txt',
-				'contentType': 'text/plain'
+			value: Buffer.from('skruppelräv'),
+			options: {
+				filename: 'reven.txt',
+				contentType: 'text/plain'
 			}
 		};
 
@@ -472,15 +472,15 @@ test('clean will remove temporary form files', function (t) {
 		];
 
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'formData': formData
+			url: 'http://127.0.0.1:' + port + '/',
+			formData: formData
 		});
 	});
 });
 
 test('clean will remove temporary raw body file', function (t) {
 	const storagePath = tmpDir + '/' + uuidv4();
-	const reqParser = new ReqParser({ 'storage': storagePath, 'log': log });
+	const reqParser = new ReqParser({ storage: storagePath, log: log });
 
 	let server;
 	let port;
@@ -513,8 +513,8 @@ test('clean will remove temporary raw body file', function (t) {
 		formData.foo = 'bar';
 
 		request({
-			'url': 'http://127.0.0.1:' + port + '/',
-			'formData': formData
+			url: 'http://127.0.0.1:' + port + '/',
+			formData: formData
 		});
 	});
 });
