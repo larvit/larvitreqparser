@@ -66,6 +66,8 @@ ReqParser.prototype.clean = function clean(req, res, cb) {
 	// Add form files to files to be removed if they exist
 	if (req.formFiles && Object.keys(req.formFiles).length) {
 		for (const formFile of Object.keys(req.formFiles)) {
+			if (req.formFiles[formFile].manualCleanup) continue;
+
 			if (Array.isArray(req.formFiles[formFile])) {
 				for (const file of req.formFiles[formFile]) {
 					if (file.path) files.push(file.path);

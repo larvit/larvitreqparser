@@ -437,8 +437,12 @@ test('clean will remove temporary form files', function (t) {
 		});
 
 		t.equal(fs.existsSync(req.formFiles.customFile.path), true);
+		t.equal(fs.existsSync(req.formFiles.manuallyCleanedUp.path), true);
 		t.equal(fs.existsSync(req.formFiles.arrWithBuffers[0].path), true);
 		t.equal(fs.existsSync(req.formFiles.arrWithBuffers[1].path), true);
+
+		// Set file to manually removed
+		req.formFiles.manuallyCleanedUp.manualCleanup = true;
 
 		reqParser.clean(req, res, function (err) {
 			if (err) throw err;
@@ -447,6 +451,7 @@ test('clean will remove temporary form files', function (t) {
 				t.equal(fs.existsSync(req.formFiles.customFile.path), false);
 				t.equal(fs.existsSync(req.formFiles.arrWithBuffers[0].path), false);
 				t.equal(fs.existsSync(req.formFiles.arrWithBuffers[1].path), false);
+				t.equal(fs.existsSync(req.formFiles.manuallyCleanedUp.path), true);
 				t.end();
 			}, 50);
 		});
@@ -462,6 +467,14 @@ test('clean will remove temporary form files', function (t) {
 			value: Buffer.from('skruppelräv'),
 			options: {
 				filename: 'reven.txt',
+				contentType: 'text/plain'
+			}
+		};
+
+		formData.manuallyCleanedUp = {
+			value: Buffer.from('nissepisse'),
+			options: {
+				filename: 'nisse.txt',
 				contentType: 'text/plain'
 			}
 		};
