@@ -91,3 +91,17 @@ new App({
 	]
 });
 ```
+
+If a file should not be cleaned up for some reason a flag can be set on the formFile object to indicate manual cleanup:
+
+```javascript
+function middleware(req, res, cb) {
+	req.formFiles.myFile.manualCleanup = true; // Tell larvitreqparser clean function not to remove the file
+	
+	doSomethingAsyncWithTheFile(req.formFiles.myFile, function() {
+		// Manually remove the file when we are done with it
+	});
+	
+	cb(); // We continue before async work on the file is completed
+}
+```
