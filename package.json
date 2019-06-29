@@ -30,7 +30,7 @@
     "eslint": "5.16.0",
     "istanbul": "0.4.5",
     "request": "2.88.0",
-    "tape": "4.10.1",
+    "tape": "4.11.0",
     "tape-eslint": "1.2.1"
   },
   "dependencies": {
