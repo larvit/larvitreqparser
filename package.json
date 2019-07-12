@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/larvit/larvitreqparser#readme",
   "devDependencies": {
-    "coveralls": "3.0.3",
+    "coveralls": "3.0.5",
     "eslint": "5.16.0",
     "istanbul": "0.4.5",
     "request": "2.88.0",
