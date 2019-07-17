@@ -34,7 +34,7 @@
     "tape-eslint": "1.2.1"
   },
   "dependencies": {
-    "async": "^2.6.0",
+    "async": "^3.0.0",
     "busboy": "^0.3.0",
     "fs-extra": "^7.0.0",
     "larvitutils": "^2.1.0",
