@@ -25,15 +25,15 @@ npm i --save larvitreqparser
 Usage with [larvitbase](https://github.com/larvit/larvitbase)
 
 ```javascript
-const App       = require('larvitbase'),
-			ReqParser = require('larvitreqparser'),
-      reqParser = new ReqParser({
-				// OPTIONAL
-				'fs':             require('fs-extra'),                        // Needs some extra functions from fs-extra
-				'log':            new (new (require('larvitutils'))()).Log(), // Compatible with the winston logging library
-				'storage':        'memory',                                   // Default. Options: 'memory' or a file path, for example '/tmp'.
-      	'busboyOptions':  {}                                          // Custom busboy options, see https://github.com/mscdex/busboy for options
-      });
+const App = require('larvitbase');
+const ReqParser = require('larvitreqparser');
+const reqParser = new ReqParser({
+	// OPTIONAL
+	'fs': require('fs-extra'), // Needs some extra functions from fs-extra
+	'log': new (require('larvitutils').Log(), // Compatible with the winston logging library
+	'storage': 'memory', // Default. Options: 'memory' or a file path, for example '/tmp'.
+	'busboyOptions': {} // Custom busboy options, see https://github.com/mscdex/busboy for options
+});
 
 new App({
 	'httpOptions': 8001,
@@ -72,12 +72,12 @@ new App({
 When not using memory, files are stored on disk. They must be manually removed or they will just fill up infinitly!
 
 ```javascript
-const App        = require('larvitbase'),
-      ReqParser  = require('larvitreqparser'),
-      reqParser  = new ReqParser({
-      	'storage': '/tmp'
-      }),
-      fs         = require('fs');
+const App = require('larvitbase');
+const ReqParser = require('larvitreqparser');
+const reqParser = new ReqParser({
+	'storage': '/tmp'
+});
+const fs = require('fs');
 
 new App({
 	'httpOptions': 8001,
@@ -97,11 +97,11 @@ If a file should not be cleaned up for some reason a flag can be set on the form
 ```javascript
 function middleware(req, res, cb) {
 	req.formFiles.myFile.manualCleanup = true; // Tell larvitreqparser clean function not to remove the file
-	
+
 	doSomethingAsyncWithTheFile(req.formFiles.myFile, function() {
 		// Manually remove the file when we are done with it
 	});
-	
+
 	cb(); // We continue before async work on the file is completed
 }
 ```
