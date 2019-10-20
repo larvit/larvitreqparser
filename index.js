@@ -28,9 +28,7 @@ function ReqParser(options) {
 	}
 
 	if (!that.options.log) {
-		const lUtils = new LUtils();
-
-		that.options.log = new lUtils.Log();
+		that.options.log = new LUtils.Log();
 	}
 
 	if (!that.options.fs) {

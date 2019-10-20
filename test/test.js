@@ -7,7 +7,7 @@ const tmpDir = require('os').tmpdir();
 const LUtils = require('larvitutils');
 const test = require('tape');
 const http = require('http');
-const log = new (new LUtils()).Log('nej');
+const log = new LUtils.Log('none');
 const fs = require('fs-extra');
 
 /* eslint-disable require-jsdoc */
