@@ -101,7 +101,7 @@ test('POST, raw body, memory storage', t => {
 		port = server.address().port;
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar'
+			body: 'foobar',
 		});
 	});
 });
@@ -135,7 +135,7 @@ test('POST, raw body, fs storage', t => {
 		port = server.address().port;
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar'
+			body: 'foobar',
 		});
 	});
 });
@@ -146,7 +146,7 @@ test('POST, raw body, custom fs storage and busboy options', t => {
 		storage: storagePath,
 		log,
 		fs: require('fs-extra'),
-		busboyOptions: { defCharset: 'utf8' }
+		busboyOptions: { defCharset: 'utf8' },
 	});
 
 	let server;
@@ -174,7 +174,7 @@ test('POST, raw body, custom fs storage and busboy options', t => {
 		port = server.address().port;
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar'
+			body: 'foobar',
 		});
 	});
 });
@@ -202,7 +202,7 @@ test('POST, raw body, fs storage, invalid path', t => {
 		port = server.address().port;
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar'
+			body: 'foobar',
 		});
 	});
 });
@@ -243,9 +243,9 @@ test('POST, application/x-www-form-urlencoded, memory storage', t => {
 				'beng tops': [
 					'arr',
 					'ay',
-					'öber alles & ännu mer'
-				]
-			}
+					'öber alles & ännu mer',
+				],
+			},
 		});
 	});
 });
@@ -287,9 +287,9 @@ test('POST, application/x-www-form-urlencoded, fs storage', t => {
 				'beng tops': [
 					'arr',
 					'ay',
-					'öber alles & ännu mer'
-				]
-			}
+					'öber alles & ännu mer',
+				],
+			},
 		});
 	});
 });
@@ -337,19 +337,19 @@ test('POST, multipart/form-data, memory storage', t => {
 		formData.enLitenBuffer = Buffer.from('foo feng fall');
 		formData['arrWithBuffers[]'] = [
 			Buffer.from('apa'),
-			Buffer.from('bengbison')
+			Buffer.from('bengbison'),
 		];
 		formData.customFile = {
 			value: Buffer.from('skruppelräv'),
 			options: {
 				filename: 'reven.txt',
-				contentType: 'text/plain'
-			}
+				contentType: 'text/plain',
+			},
 		};
 
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData
+			formData: formData,
 		});
 	});
 });
@@ -404,19 +404,19 @@ test('POST, multipart/form-data, fs storage', t => {
 		formData.enLitenBuffer = Buffer.from('foo feng fall');
 		formData['arrWithBuffers[]'] = [
 			Buffer.from('apa'),
-			Buffer.from('bengbison')
+			Buffer.from('bengbison'),
 		];
 		formData.customFile = {
 			value: Buffer.from('skruppelräv'),
 			options: {
 				filename: 'reven.txt',
-				contentType: 'text/plain'
-			}
+				contentType: 'text/plain',
+			},
 		};
 
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData
+			formData: formData,
 		});
 	});
 });
@@ -445,9 +445,9 @@ test('POST, empty form should not crasch application', t => {
 		request.post({
 			url: 'http://127.0.0.1:' + port + '/',
 			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded'
+				'Content-Type': 'application/x-www-form-urlencoded',
 			},
-			body: undefined
+			body: undefined,
 		});
 	});
 });
@@ -497,26 +497,26 @@ test('clean will remove temporary form files', t => {
 			value: Buffer.from('skruppelräv'),
 			options: {
 				filename: 'reven.txt',
-				contentType: 'text/plain'
-			}
+				contentType: 'text/plain',
+			},
 		};
 
 		formData.manuallyCleanedUp = {
 			value: Buffer.from('nissepisse'),
 			options: {
 				filename: 'nisse.txt',
-				contentType: 'text/plain'
-			}
+				contentType: 'text/plain',
+			},
 		};
 
 		formData['arrWithBuffers[]'] = [
 			Buffer.from('apa'),
-			Buffer.from('bengbison')
+			Buffer.from('bengbison'),
 		];
 
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData
+			formData: formData,
 		});
 	});
 });
@@ -557,7 +557,7 @@ test('clean will remove temporary raw body file', t => {
 
 		request({
 			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData
+			formData: formData,
 		});
 	});
 });
