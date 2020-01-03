@@ -105,3 +105,7 @@ function middleware(req, res, cb) {
 	cb(); // We continue before async work on the file is completed
 }
 ```
+
+#### Changelog
+
+* 0.4.7 - Added simplest possible declaration file for package to work with typescript
