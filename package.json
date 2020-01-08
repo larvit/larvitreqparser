@@ -32,7 +32,7 @@
     "nyc": "15.0.0",
     "request": "2.88.0",
     "tap-spec": "5.0.0",
-    "tape": "4.12.1"
+    "tape": "4.13.0"
   },
   "dependencies": {
     "async": "3.1.0",
