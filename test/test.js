@@ -79,6 +79,32 @@ test('GET Https request, no host, no body', t => {
 	});
 });
 
+test('Test urlParsed on X-Forwarded-Proto', t => {
+	const reqParser = new ReqParser({ log });
+	const req = {};
+	const res = {};
+
+	req.url = '/foo?bar=baz';
+	req.connection = {};
+	req.connection.encrypted = false; // This should be overruled by X-Forwarded-Proto header
+	req.headers = { 'X-Forwarded-Proto': 'https' };
+	req.uuid = 'test';
+
+	reqParser.parse(req, res, err => {
+		if (err) throw err;
+
+		t.equal(req.urlParsed.protocol, 'https:', 'Protocol should be "https"');
+		t.equal(req.urlParsed.pathname, '/foo', 'pathname should be "/foo"');
+		t.equal(req.urlParsed.query.bar, 'baz', 'query.bar should be "baz"');
+		t.equal(req.urlParsed.search, '?bar=baz', 'search should be "?bar=baz"');
+		t.equal(req.urlParsed.hostname, 'localhost', 'hostname should be "localhost"');
+		t.equal(req.urlParsed.port, null, 'port should be null');
+		t.equal(req.uuid, 'test', 'uuid should be "test"');
+
+		t.end();
+	});
+});
+
 test('POST, raw body, memory storage', t => {
 	const reqParser = new ReqParser({ log });
 
