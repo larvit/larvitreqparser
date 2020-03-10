@@ -273,11 +273,19 @@ ReqParser.prototype.parseUrl = function parseUrl(req, res, cb) {
 	let protocol;
 	let host;
 
-	if (req.headers && req.headers['X-Forwarded-Proto']) {
-		protocol = req.headers['X-Forwarded-Proto'].toLowerCase();
-	} else if (req.connection && req.connection.encrypted) {
+	// Check if forwarded headers have set
+	if (req.headers) {
+		for (const [key, value] of Object.entries(req.headers)) {
+			if (key.toLocaleLowerCase() === 'x-forwarded-proto') {
+				protocol = value.toLowerCase();
+				break;
+			}
+		}
+	}
+
+	if (!protocol && req.connection && req.connection.encrypted) {
 		protocol = 'https';
-	} else {
+	} else if (!protocol) {
 		protocol = 'http';
 	}
 
