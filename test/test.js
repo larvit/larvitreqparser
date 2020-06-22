@@ -320,6 +320,55 @@ test('POST, application/x-www-form-urlencoded, fs storage', t => {
 	});
 });
 
+test('POST, application/x-www-form-urlencoded, fs storage parameterLimit: 6', t => {
+	const storagePath = tmpDir + '/' + uuidv4();
+	const reqParser = new ReqParser({ storage: storagePath, qsParseOptions: { parameterLimit: 6 }, log });
+
+	let server;
+	let port;
+
+	startServer(reqParser, (req, res) => {
+		if (req.err) throw req.err;
+		res.end();
+		server.close(err => {
+			if (err) throw err;
+		});
+
+		t.equal(
+			fs.readFileSync(req.rawBodyPath).toString(),
+			'foo=bar&beng%20tops%5B0%5D=arr&beng%20tops%5B1%5D=ay&beng%20tops%5B2%5D=%C3%B6ber%20alles%20%26%20%C3%A4nnu%20mer&testar%5B0%5D=jaha&testar%5B1%5D=nehe&testar%5B2%5D=ojd%C3%A5',
+			'rawBody should be the raw form content',
+		);
+		t.equal(
+			JSON.stringify(req.formFields),
+			'{"foo":"bar","beng tops":["arr","ay","öber alles & ännu mer"],"testar":["jaha","nehe"]}', // ,"ojdå" missing due to parameterLimit: 6.
+			'req.formFields should be a nice stringifyed JSON of the form data',
+		);
+
+		t.end();
+	}, (err, result) => {
+		if (err) throw err;
+		server = result;
+		port = server.address().port;
+		request({
+			url: 'http://127.0.0.1:' + port + '/',
+			form: {
+				foo: 'bar',
+				'beng tops': [
+					'arr',
+					'ay',
+					'öber alles & ännu mer',
+				],
+				testar: [
+					'jaha',
+					'nehe',
+					'ojdå',
+				],
+			},
+		});
+	});
+});
+
 test('POST, multipart/form-data, memory storage', t => {
 	const reqParser = new ReqParser({ log });
 

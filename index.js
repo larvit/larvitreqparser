@@ -263,7 +263,7 @@ ReqParser.prototype.parseFormUrlEncoded = function parseFormUrlEncoded(req, cb) 
 				return cb(err);
 			}
 
-			req.formFields = qs.parse(content.toString());
+			req.formFields = qs.parse(content.toString(), that.qsParseOptions || {});
 			cb();
 		});
 	}
