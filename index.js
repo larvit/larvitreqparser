@@ -195,7 +195,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 			fieldsStr = fieldsStr.substr(0, fieldsStr.length - 1);
 		}
 
-		req.formFields = qs.parse(fieldsStr);
+		req.formFields = qs.parse(fieldsStr, that.qsParseOptions || {});
 
 		if (that.options.storage === 'memory') {
 			return cb();
