@@ -106,9 +106,11 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 	});
 
 	// Parse URL
-	tasks.push(function (cb) {
-		that.parseUrl(req, res, cb);
-	});
+	if (!req.urlParsed) {
+		tasks.push(function (cb) {
+			that.parseUrl(req, res, cb);
+		});
+	}
 
 	if (req.headers) {
 		for (const headerName of Object.keys(req.headers)) {
