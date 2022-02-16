@@ -1,14 +1,17 @@
 'use strict';
 
 const ReqParser = require(__dirname + '/../index.js');
-const request = require('request');
-const uuidv4 = require('uuid/v4');
+const FormData = require('form-data');
+const { Log } = require('larvitutils');
+const uuidLib = require('uuid');
 const tmpDir = require('os').tmpdir();
-const LUtils = require('larvitutils');
+const axios = require('axios').default;
 const test = require('tape');
 const http = require('http');
-const log = new LUtils.Log('none');
 const fs = require('fs-extra');
+
+
+const log = new Log('none');
 
 /* eslint-disable require-jsdoc */
 
@@ -50,7 +53,7 @@ test('GET Http request, no body, no passed log instance', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request('http://127.0.0.1:' + port + '/foo?bar=baz');
+		axios('http://127.0.0.1:' + port + '/foo?bar=baz');
 	});
 });
 
@@ -125,15 +128,15 @@ test('POST, raw body, memory storage', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
+		axios({
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar',
+			data: 'foobar',
 		});
 	});
 });
 
 test('POST, raw body, fs storage', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, log });
 
 	let server;
@@ -159,15 +162,16 @@ test('POST, raw body, fs storage', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
+		axios({
+			method: 'POST',
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar',
+			data: 'foobar',
 		});
 	});
 });
 
 test('POST, raw body, custom fs storage and busboy options', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({
 		storage: storagePath,
 		log,
@@ -198,9 +202,10 @@ test('POST, raw body, custom fs storage and busboy options', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
+		axios({
+			method: 'POST',
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar',
+			data: 'foobar',
 		});
 	});
 });
@@ -226,9 +231,10 @@ test('POST, raw body, fs storage, invalid path', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
+		axios({
+			method: 'POST',
 			url: 'http://127.0.0.1:' + port + '/',
-			body: 'foobar',
+			data: 'foobar',
 		});
 	});
 });
@@ -248,7 +254,7 @@ test('POST, application/x-www-form-urlencoded, memory storage', t => {
 
 		t.equal(
 			req.rawBody.toString(),
-			'foo=bar&beng%20tops%5B0%5D=arr&beng%20tops%5B1%5D=ay&beng%20tops%5B2%5D=%C3%B6ber%20alles%20%26%20%C3%A4nnu%20mer',
+			'foo=bar&beng+tops=arr&beng+tops=ay&beng+tops=%C3%B6ber+alles+%26+%C3%A4nnu+mer',
 			'rawBody should be the raw form content',
 		);
 		t.equal(
@@ -262,22 +268,17 @@ test('POST, application/x-www-form-urlencoded, memory storage', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
-			url: 'http://127.0.0.1:' + port + '/',
-			form: {
-				foo: 'bar',
-				'beng tops': [
-					'arr',
-					'ay',
-					'öber alles & ännu mer',
-				],
-			},
-		});
+		const formData = new URLSearchParams();
+		formData.append('foo', 'bar');
+		formData.append('beng tops', 'arr');
+		formData.append('beng tops', 'ay');
+		formData.append('beng tops', 'öber alles & ännu mer');
+		axios.post('http://127.0.0.1:' + port + '/', formData);
 	});
 });
 
 test('POST, application/x-www-form-urlencoded, fs storage', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, log });
 
 	let server;
@@ -292,7 +293,7 @@ test('POST, application/x-www-form-urlencoded, fs storage', t => {
 
 		t.equal(
 			fs.readFileSync(req.rawBodyPath).toString(),
-			'foo=bar&beng%20tops%5B0%5D=arr&beng%20tops%5B1%5D=ay&beng%20tops%5B2%5D=%C3%B6ber%20alles%20%26%20%C3%A4nnu%20mer',
+			'foo=bar&beng+tops=arr&beng+tops=ay&beng+tops=%C3%B6ber+alles+%26+%C3%A4nnu+mer',
 			'rawBody should be the raw form content',
 		);
 		t.equal(
@@ -306,22 +307,17 @@ test('POST, application/x-www-form-urlencoded, fs storage', t => {
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
-			url: 'http://127.0.0.1:' + port + '/',
-			form: {
-				foo: 'bar',
-				'beng tops': [
-					'arr',
-					'ay',
-					'öber alles & ännu mer',
-				],
-			},
-		});
+		const formData = new URLSearchParams();
+		formData.append('foo', 'bar');
+		formData.append('beng tops', 'arr');
+		formData.append('beng tops', 'ay');
+		formData.append('beng tops', 'öber alles & ännu mer');
+		axios.post('http://127.0.0.1:' + port + '/', formData);
 	});
 });
 
 test('POST, application/x-www-form-urlencoded, fs storage parameterLimit: 6', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, qsParseOptions: { parameterLimit: 6 }, log });
 
 	let server;
@@ -336,7 +332,7 @@ test('POST, application/x-www-form-urlencoded, fs storage parameterLimit: 6', t 
 
 		t.equal(
 			fs.readFileSync(req.rawBodyPath).toString(),
-			'foo=bar&beng%20tops%5B0%5D=arr&beng%20tops%5B1%5D=ay&beng%20tops%5B2%5D=%C3%B6ber%20alles%20%26%20%C3%A4nnu%20mer&testar%5B0%5D=jaha&testar%5B1%5D=nehe&testar%5B2%5D=ojd%C3%A5',
+			'foo=bar&beng+tops=arr&beng+tops=ay&beng+tops=%C3%B6ber+alles+%26+%C3%A4nnu+mer&testar=jaha&testar=nehe&testar=ojd%C3%A5',
 			'rawBody should be the raw form content',
 		);
 		t.equal(
@@ -350,22 +346,15 @@ test('POST, application/x-www-form-urlencoded, fs storage parameterLimit: 6', t 
 		if (err) throw err;
 		server = result;
 		port = server.address().port;
-		request({
-			url: 'http://127.0.0.1:' + port + '/',
-			form: {
-				foo: 'bar',
-				'beng tops': [
-					'arr',
-					'ay',
-					'öber alles & ännu mer',
-				],
-				testar: [
-					'jaha',
-					'nehe',
-					'ojdå',
-				],
-			},
-		});
+		const formData = new URLSearchParams();
+		formData.append('foo', 'bar');
+		formData.append('beng tops', 'arr');
+		formData.append('beng tops', 'ay');
+		formData.append('beng tops', 'öber alles & ännu mer');
+		formData.append('testar', 'jaha');
+		formData.append('testar', 'nehe');
+		formData.append('testar', 'ojdå');
+		axios.post('http://127.0.0.1:' + port + '/', formData);
 	});
 });
 
@@ -396,41 +385,32 @@ test('POST, multipart/form-data, memory storage', t => {
 
 		t.end();
 	}, (err, result) => {
-		const formData = {};
-
 		if (err) throw err;
 
 		server = result;
 		port = server.address().port;
 
-		formData.foo = 'bar';
-		formData['ove[]'] = 'första ove';
-		formData['beng tops'] = 'öber alles & ännu mer';
-		formData['untz[firstname]'] = 'kalle';
-		formData['untz[lastname][first]'] = 'benktsson';
-		formData['untz[lastname][second]'] = 'lurresson';
-		formData.enLitenBuffer = Buffer.from('foo feng fall');
-		formData['arrWithBuffers[]'] = [
-			Buffer.from('apa'),
-			Buffer.from('bengbison'),
-		];
-		formData.customFile = {
-			value: Buffer.from('skruppelräv'),
-			options: {
-				filename: 'reven.txt',
-				contentType: 'text/plain',
-			},
-		};
-
-		request({
-			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData,
+		const formData = new FormData();
+		formData.append('foo', 'bar');
+		formData.append('ove[]', 'första ove');
+		formData.append('beng tops', 'öber alles & ännu mer');
+		formData.append('untz[firstname]', 'kalle');
+		formData.append('untz[lastname][first]', 'benktsson');
+		formData.append('untz[lastname][second]', 'lurresson');
+		formData.append('enLitenBuffer', Buffer.from('foo feng fall'));
+		formData.append('arrWithBuffers[]', Buffer.from('apa'));
+		formData.append('arrWithBuffers[]', Buffer.from('bengbison'));
+		formData.append('customFile', Buffer.from('skruppelräv'), {
+			filename: 'reven.txt',
+			contentType: 'text/plain',
 		});
+
+		axios.post('http://127.0.0.1:' + port + '/', formData, { headers: formData.getHeaders() });
 	});
 });
 
 test('POST, multipart/form-data, fs storage', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, log });
 
 	let server;
@@ -466,33 +446,24 @@ test('POST, multipart/form-data, fs storage', t => {
 			}, 50);
 		});
 	}, (err, result) => {
-		const formData = {};
-
 		if (err) throw err;
 
 		server = result;
 		port = server.address().port;
 
-		formData.foo = 'bar';
-		formData['ove[]'] = 'första ove';
-		formData['beng tops'] = 'öber alles & ännu mer';
-		formData.enLitenBuffer = Buffer.from('foo feng fall');
-		formData['arrWithBuffers[]'] = [
-			Buffer.from('apa'),
-			Buffer.from('bengbison'),
-		];
-		formData.customFile = {
-			value: Buffer.from('skruppelräv'),
-			options: {
-				filename: 'reven.txt',
-				contentType: 'text/plain',
-			},
-		};
-
-		request({
-			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData,
+		const formData = new FormData();
+		formData.append('foo', 'bar');
+		formData.append('ove[]', 'första ove');
+		formData.append('beng tops', 'öber alles & ännu mer');
+		formData.append('enLitenBuffer', Buffer.from('foo feng fall'));
+		formData.append('arrWithBuffers[]', Buffer.from('apa'));
+		formData.append('arrWithBuffers[]', Buffer.from('bengbison'));
+		formData.append('customFile', Buffer.from('skruppelräv'), {
+			filename: 'reven.txt',
+			contentType: 'text/plain',
 		});
+
+		axios.post('http://127.0.0.1:' + port + '/', formData, { headers: formData.getHeaders() });
 	});
 });
 
@@ -517,18 +488,19 @@ test('POST, empty form should not crasch application', t => {
 		server = result;
 		port = server.address().port;
 
-		request.post({
+		axios({
+			method: 'POST',
 			url: 'http://127.0.0.1:' + port + '/',
+			data: undefined,
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
-			body: undefined,
 		});
 	});
 });
 
 test('clean will remove temporary form files', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, log });
 
 	let server;
@@ -561,43 +533,30 @@ test('clean will remove temporary form files', t => {
 			}, 50);
 		});
 	}, (err, result) => {
-		const formData = {};
-
 		if (err) throw err;
 
 		server = result;
 		port = server.address().port;
 
-		formData.customFile = {
-			value: Buffer.from('skruppelräv'),
-			options: {
-				filename: 'reven.txt',
-				contentType: 'text/plain',
-			},
-		};
-
-		formData.manuallyCleanedUp = {
-			value: Buffer.from('nissepisse'),
-			options: {
-				filename: 'nisse.txt',
-				contentType: 'text/plain',
-			},
-		};
-
-		formData['arrWithBuffers[]'] = [
-			Buffer.from('apa'),
-			Buffer.from('bengbison'),
-		];
-
-		request({
-			url: 'http://127.0.0.1:' + port + '/',
-			formData: formData,
+		const formData = new FormData();
+		formData.append('customFile', Buffer.from('skruppelräv'), {
+			filename: 'reven.txt',
+			contentType: 'text/plain',
 		});
+		formData.append('manuallyCleanedUp', Buffer.from('nissepisse'), {
+			filename: 'nisse.txt',
+			contentType: 'text/plain',
+		});
+
+		formData.append('arrWithBuffers[]', Buffer.from('apa'));
+		formData.append('arrWithBuffers[]', Buffer.from('bengbison'));
+
+		axios.post('http://127.0.0.1:' + port + '/', formData, { headers: formData.getHeaders() });
 	});
 });
 
 test('clean will remove temporary raw body file', t => {
-	const storagePath = tmpDir + '/' + uuidv4();
+	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, log });
 
 	let server;
@@ -630,7 +589,7 @@ test('clean will remove temporary raw body file', t => {
 
 		formData.foo = 'bar';
 
-		request({
+		axios({
 			url: 'http://127.0.0.1:' + port + '/',
 			formData: formData,
 		});

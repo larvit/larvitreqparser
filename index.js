@@ -3,9 +3,9 @@
 const topLogPrefix = 'larvitreqparser: ./index.js: ';
 const EventEmitter = require('events').EventEmitter;
 const Readable = require('stream').Readable;
-const uuidv4 = require('uuid/v4');
-const Busboy = require('busboy');
-const LUtils = require('larvitutils');
+const { Log } = require('larvitutils');
+const uuidLib = require('uuid');
+const busboy = require('busboy');
 const async = require('async');
 const url = require('url');
 const qs = require('qs');
@@ -28,7 +28,7 @@ function ReqParser(options) {
 	}
 
 	if (!that.options.log) {
-		that.options.log = new LUtils.Log();
+		that.options.log = new Log();
 	}
 
 	if (!that.options.fs) {
@@ -96,7 +96,7 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 	const that = this;
 
 	if (!req.uuid) {
-		req.uuid = uuidv4();
+		req.uuid = uuidLib.v4();
 	}
 	req.reqParser = {};
 
@@ -138,7 +138,7 @@ ReqParser.prototype.parse = function parse(req, res, cb) {
 };
 
 ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
-	const busboy = new Busboy(this.busboyOptions);
+	const bb = busboy(this.busboyOptions);
 	const logPrefix = topLogPrefix + 'parseFormMultipart() - reqUuid: ' + req.uuid + ' - ';
 	const that = this;
 
@@ -147,12 +147,12 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	req.formFields = {};
 	req.formFiles = {};
 
-	busboy.on('file', function (fieldName, file, filename, encoding, mimetype) {
+	bb.on('file', function (fieldName, file, info) {
 		const formFile = {};
 
-		formFile.filename = filename;
-		formFile.encoding = encoding;
-		formFile.mimetype = mimetype;
+		formFile.filename = info.filename;
+		formFile.encoding = info.encoding;
+		formFile.mimetype = info.mimeType;
 
 		if (that.options.storage === 'memory') {
 			formFile.buffer = [];
@@ -161,7 +161,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 				formFile.buffer.push(data);
 			});
 		} else {
-			formFile.path = that.storage + '/' + uuidv4();
+			formFile.path = that.storage + '/' + uuidLib.v4();
 			formFile.writeStream = that.fs.createWriteStream(formFile.path);
 			file.pipe(formFile.writeStream);
 			formFile.writeStream.on('close', function () {
@@ -186,11 +186,11 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 		});
 	});
 
-	busboy.on('field', function (fieldName, fieldVal) {
+	bb.on('field', function (fieldName, fieldVal) {
 		fieldsStr += encodeURIComponent(fieldName) + '=' + encodeURIComponent(fieldVal) + '&';
 	});
 
-	busboy.on('finish', function () {
+	bb.on('finish', function () {
 		const tasks = [];
 
 		if (fieldsStr.endsWith('&')) {
@@ -232,7 +232,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 
 		stream.push(req.rawBody);
 		stream.push(null);
-		stream.pipe(busboy);
+		stream.pipe(bb);
 	} else {
 		const readStream = that.fs.createReadStream(req.rawBodyPath);
 
@@ -240,7 +240,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 			that.log.error(logPrefix + 'Can not create read stream to file. Path: "' + req.rawBodyPath + '", err: ' + err.message);
 		});
 
-		readStream.pipe(busboy);
+		readStream.pipe(bb);
 	}
 };
 
