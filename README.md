@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/larvit/larvitreqparser.svg?branch=master)](https://travis-ci.org/larvit/larvitreqparser) [![Dependencies](https://david-dm.org/larvit/larvitreqparser.svg)](https://david-dm.org/larvit/larvitreqparser.svg)
-[![Coverage Status](https://coveralls.io/repos/larvit/larvitreqparser/badge.svg)](https://coveralls.io/github/larvit/larvitreqparser)
+[![Build Status](https://github.com/larvit/larvitreqparser/actions/workflows/node.js.yml/badge.svg)](https://github.com/larvit/larvitreqparser/actions) [![Dependencies](https://david-dm.org/larvit/larvitreqparser.svg)](https://david-dm.org/larvit/larvitreqparser.svg)
 
 # Request parser middleware
 
