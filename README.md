@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/larvit/larvitreqparser/actions/workflows/node.js.yml/badge.svg)](https://github.com/larvit/larvitreqparser/actions)
+[![Build Status](https://github.com/larvit/larvitreqparser/actions/workflows/ci.yml/badge.svg)](https://github.com/larvit/larvitreqparser/actions)
 
 # Request parser middleware
 
