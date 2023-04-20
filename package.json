@@ -1,6 +1,6 @@
 {
   "name": "larvitreqparser",
-  "version": "0.5.40",
+  "version": "0.5.41",
   "description": "Middleware to larvitbase or Express to handle forms",
   "main": "index.js",
   "scripts": {

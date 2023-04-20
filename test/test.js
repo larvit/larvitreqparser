@@ -499,6 +499,39 @@ test('POST, empty form should not crasch application', t => {
 	});
 });
 
+test('POST, empty form with form data boundary should not crasch application (request lib can send this)', t => {
+	const reqParser = new ReqParser({ log });
+
+	let server;
+	let port;
+
+	startServer(reqParser, (req, res) => {
+		t.ok(req.err, 'Error response should have been sent');
+		t.equals(req.err.message, 'Unexpected end of form', 'Error message should be "Unexpected end of form"');
+
+		res.end();
+		server.close(err => {
+			if (err) throw err;
+		});
+
+		t.end();
+	}, (err, result) => {
+		if (err) throw err;
+
+		server = result;
+		port = server.address().port;
+
+		axios({
+			method: 'POST',
+			url: 'http://127.0.0.1:' + port + '/',
+			data: undefined,
+			headers: {
+				'Content-Type': 'multipart/form-data; boundary=--------------------------284181756791521756513404',
+			},
+		});
+	});
+});
+
 test('clean will remove temporary form files', t => {
 	const storagePath = tmpDir + '/' + uuidLib.v4();
 	const reqParser = new ReqParser({ storage: storagePath, log });

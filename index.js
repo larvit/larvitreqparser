@@ -143,6 +143,7 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 	const that = this;
 
 	let fieldsStr = '';
+	let cbCalled = false;
 
 	req.formFields = {};
 	req.formFiles = {};
@@ -190,6 +191,14 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 		fieldsStr += encodeURIComponent(fieldName) + '=' + encodeURIComponent(fieldVal) + '&';
 	});
 
+	bb.on('error', err => {
+		that.log.error('Error from busboy stream: ' + err.message);
+		if (cbCalled) return;
+		cbCalled = true;
+
+		return cb(err);
+	});
+
 	bb.on('finish', function () {
 		const tasks = [];
 
@@ -200,6 +209,9 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 		req.formFields = qs.parse(fieldsStr, that.qsParseOptions || {});
 
 		if (that.options.storage === 'memory') {
+			if (cbCalled) return;
+			cbCalled = true;
+
 			return cb();
 		}
 
@@ -224,7 +236,11 @@ ReqParser.prototype.parseFormMultipart = function parseFormMultipart(req, cb) {
 			}
 		}
 
-		async.parallel(tasks, cb);
+		async.parallel(tasks, err => {
+			if (cbCalled) return;
+			cbCalled = true;
+			cb(err);
+		});
 	});
 
 	if (that.storage === 'memory') {
