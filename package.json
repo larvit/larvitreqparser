@@ -1,6 +1,6 @@
 {
   "name": "larvitreqparser",
-  "version": "0.5.47",
+  "version": "0.5.48",
   "description": "Middleware to larvitbase or Express to handle forms",
   "main": "index.js",
   "scripts": {
@@ -28,16 +28,16 @@
   "homepage": "https://github.com/larvit/larvitreqparser#readme",
   "devDependencies": {
     "axios": "1.4.0",
-    "eslint": "8.43.0",
+    "eslint": "8.44.0",
     "form-data": "4.0.0",
     "nyc": "15.1.0",
-    "tape": "5.6.3"
+    "tape": "5.6.4"
   },
   "dependencies": {
     "async": "3.2.4",
     "busboy": "1.6.0",
     "fs-extra": "11.1.1",
-    "larvitutils": "5.1.39",
+    "larvitutils": "5.1.41",
     "qs": "6.11.2",
     "uuid": "9.0.0"
   }
