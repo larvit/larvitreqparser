@@ -1,6 +1,6 @@
 {
   "name": "larvitreqparser",
-  "version": "0.5.114",
+  "version": "0.5.115",
   "description": "Middleware to larvitbase or Express to handle forms",
   "main": "index.js",
   "scripts": {
@@ -37,7 +37,7 @@
     "async": "3.2.6",
     "busboy": "1.6.0",
     "fs-extra": "11.3.0",
-    "larvitutils": "5.1.128",
+    "larvitutils": "5.1.130",
     "qs": "6.14.0",
     "uuid": "11.0.5"
   }
