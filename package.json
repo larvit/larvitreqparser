@@ -1,6 +1,6 @@
 {
   "name": "larvitreqparser",
-  "version": "0.5.138",
+  "version": "0.5.139",
   "description": "Middleware to larvitbase or Express to handle forms",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/larvit/larvitreqparser#readme",
   "devDependencies": {
-    "axios": "1.7.3",
+    "axios": "1.8.2",
     "eslint": "8.57.1",
     "form-data": "4.0.5",
     "nyc": "17.1.0",
